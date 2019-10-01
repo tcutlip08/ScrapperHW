@@ -21,9 +21,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost/MongooseHomework", {
-  useNewUrlParser: true
-});
+var MONGODB_URI =
+  process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+
+mongoose.connect(MONGODB_URI);
 
 app.get("/scrape", function(req, res) {
   axios
@@ -43,7 +44,7 @@ app.get("/scrape", function(req, res) {
 
         db.Song.create(result)
           .then(function(songAndArtist) {
-            console.log(songAndArtist);
+            // console.log(songAndArtist);
           })
           .catch(function(err) {
             console.log(err);
