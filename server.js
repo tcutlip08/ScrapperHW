@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost/articleHomework", {
+mongoose.connect("mongodb://localhost/MongooseHomework", {
   useNewUrlParser: true
 });
 
@@ -32,72 +32,64 @@ app.get("/scrape", function(req, res) {
       var $ = cheerio.load(response.data);
 
       $("div .i").each(function(i, element) {
-        console.log("/////////////////////////////////////////////////////");
-        // console.log(element);
         var result = {};
 
-        // result.title = $(this)
-        //   .children("strong")
-        //   .text();
-        // result.link = $(this)
-        //   .children("p")
-        //   .text();
+        result.title = $(this)
+          .children("b")
+          .text();
+        result.list = $(this)
+          .children("em")
+          .text();
 
-        console.log(
-          $(this)
-            .children("em")
-            .text()
-        );
-
-        // db.Article.create(result)
-        //   .then(function(dbArticle) {
-        //     console.log(dbArticle);
-        //   })
-        //   .catch(function(err) {
-        //     console.log(err);
-        //   });
+        db.Song.create(result)
+          .then(function(songAndArtist) {
+            console.log(songAndArtist);
+          })
+          .catch(function(err) {
+            console.log(err);
+          });
       });
 
       res.send("Scrape Complete");
     });
 });
 
-app.get("/articles", function(req, res) {
-  db.Article.find({})
+app.get("/songs", function(req, res) {
+  db.Song.find({})
     .populate("note")
-    .then(function(dbArticles) {
-      res.json(dbArticles);
+    .then(function(dbSongs) {
+      res.json(dbSongs);
     })
     .catch(function(err) {
       res.json(err);
     });
 });
 
-app.get("/articles/:id", function(req, res) {
-  db.Article.find({ _id: req.params.id })
-    .then(function(dbArticle) {
-      res.json(dbArticle);
+app.get("/songs/:id", function(req, res) {
+  db.Song.find({ _id: req.params.id })
+    .then(function(dbSong) {
+      res.json(dbSong);
     })
     .catch(function(err) {
       res.json(err);
     });
 });
 
-app.post("/articles/:id", function(req, res) {
-  db.Note.create(req.body)
-    .then(function(dbNote) {
-      db.Article.findByIdAndUpdate(req.params.id, { note: dbNote._id })
-        .then(function(dbArticle) {
-          res.json(dbArticle);
-        })
-        .catch(function(err) {
-          res.json(err);
-        });
-    })
-    .catch(function(err) {
-      res.json(err);
-    });
-});
+// app.post("/songs/:id", function(req, res) {
+//   db.Note.create(req.body)
+//     .then(function(dbNote) {
+//       db.Song.findByIdAndUpdate(req.params.id, { note: dbNote._id })
+//         .then(function(dbSong) {
+//           res.json(dbSong);
+//         })
+//         .catch(function(err) {
+//           res.json(err);
+//         });
+//     })
+//     .catch(function(err) {
+//       res.json(err);
+//     });
+// });
 
 app.listen(PORT, function() {
   console.log("App running on port " + PORT + "!");

@@ -1,12 +1,20 @@
 // Grab the articles as a json
-$.getJSON("/articles", function(data) {
+$.getJSON("/songs", function(data) {
   // For each one
   for (var i = 0; i < data.length; i++) {
     // Display the apropos information on the page
-    $("#articles").append("<p data-id='" + data[i]._id + "'>" + data[i].title + "<br />" + data[i].link + "</p>");
+    console.log(data[i]);
+    $("#articles").append(
+      "<p data-id='" +
+        data[i]._id +
+        "'>" +
+        data[i].title +
+        "<br />" +
+        data[i].list +
+        "</p>"
+    );
   }
 });
-
 
 // Whenever someone clicks a p tag
 $(document).on("click", "p", function() {
@@ -18,7 +26,7 @@ $(document).on("click", "p", function() {
   // Now make an ajax call for the Article
   $.ajax({
     method: "GET",
-    url: "/articles/" + thisId
+    url: "/songs/" + thisId
   })
     // With that done, add the note information to the page
     .then(function(data) {
@@ -30,7 +38,9 @@ $(document).on("click", "p", function() {
       // A textarea to add a new note body
       $("#notes").append("<textarea id='bodyinput' name='body'></textarea>");
       // A button to submit a new note, with the id of the article saved to it
-      $("#notes").append("<button data-id='" + data._id + "' id='savenote'>Save Note</button>");
+      $("#notes").append(
+        "<button data-id='" + data._id + "' id='savenote'>Save Note</button>"
+      );
 
       // If there's a note in the article
       if (data.note) {
@@ -50,7 +60,7 @@ $(document).on("click", "#savenote", function() {
   // Run a POST request to change the note, using what's entered in the inputs
   $.ajax({
     method: "POST",
-    url: "/articles/" + thisId,
+    url: "/songs/" + thisId,
     data: {
       // Value taken from title input
       title: $("#titleinput").val(),
