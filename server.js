@@ -2,35 +2,43 @@ var express = require("express");
 var logger = require("morgan");
 var mongoose = require("mongoose");
 var path = require("path");
+var exphbs = require("express-handlebars");
 
-// Our scraping tools
-// Axios is a promised-based http library, similar to jQuery's Ajax method
-// It works on the client and on the server
+var app = express();
+var PORT = 3000;
+
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
+
 var axios = require("axios");
 var cheerio = require("cheerio");
 
 // Require all models
 var db = require("./models");
 
-var PORT = 3000;
-
 // Initialize Express
-var app = express();
 
 app.use(logger("dev"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 
-var MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/top50";
 
 mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 });
 
 app.get("/", function(req, res) {
-  res.sendFile(path.join(__dirname, "../public/html/index.html"));
+  db.Song.find({})
+    .then(function(dbSongs) {
+      console.log(dbSongs);
+      res.render("index", { dbSongs });
+    })
+    .catch(function(err) {
+      res.json(err);
+    });
 });
 
 app.get("/scrape", function(req, res) {
@@ -59,45 +67,11 @@ app.get("/scrape", function(req, res) {
       });
 
       res.send("Scrape Complete");
-    });
-});
-
-app.get("/songs", function(req, res) {
-  db.Song.find({})
-    .populate("note")
-    .then(function(dbSongs) {
-      res.json(dbSongs);
     })
     .catch(function(err) {
-      res.json(err);
+      console.log(err);
     });
 });
-
-app.get("/songs/:id", function(req, res) {
-  db.Song.find({ _id: req.params.id })
-    .then(function(dbSong) {
-      res.json(dbSong);
-    })
-    .catch(function(err) {
-      res.json(err);
-    });
-});
-
-// app.post("/songs/:id", function(req, res) {
-//   db.Note.create(req.body)
-//     .then(function(dbNote) {
-//       db.Song.findByIdAndUpdate(req.params.id, { note: dbNote._id })
-//         .then(function(dbSong) {
-//           res.json(dbSong);
-//         })
-//         .catch(function(err) {
-//           res.json(err);
-//         });
-//     })
-//     .catch(function(err) {
-//       res.json(err);
-//     });
-// });
 
 app.listen(PORT, function() {
   console.log("App running on port " + PORT + "!");
